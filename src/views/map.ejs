@@ -1,0 +1,175 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/api/ol/ol.css" type="text/css" />
+    <style>
+      .map {
+        height: 100%;
+        width: 100%;
+      }
+      .ol-popup {
+        position: absolute;
+        background-color: white;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid #cccccc;
+        bottom: 12px;
+        left: -50px;
+        width: fit-content;
+      }
+      .ol-popup:after,
+      .ol-popup:before {
+        top: 100%;
+        border: solid transparent;
+        content: " ";
+        height: 0;
+        width: 0;
+        position: absolute;
+        pointer-events: none;
+      }
+      .ol-popup:after {
+        border-top-color: white;
+        border-width: 10px;
+        left: 48px;
+        margin-left: -10px;
+      }
+      .ol-popup:before {
+        border-top-color: #cccccc;
+        border-width: 11px;
+        left: 48px;
+        margin-left: -11px;
+      }
+      .ol-popup-closer {
+        text-decoration: none;
+        position: absolute;
+        top: 2px;
+        right: 8px;
+      }
+      .ol-popup-closer:after {
+        content: "✖";
+      }
+    </style>
+    <script src="/api/ol/ol.js"></script>
+    <title>User Location</title>
+  </head>
+  <body style="margin: 0; padding: 0">
+    <div id="map" class="map"></div>
+    <div id="popup" class="ol-popup">
+      <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+      <div id="popup-content"></div>
+    </div>
+    <script type="text/javascript">
+      var currentPos;
+      const container = document.getElementById("popup");
+      const content = document.getElementById("popup-content");
+      const closer = document.getElementById("popup-closer");
+
+      const overlay = new ol.Overlay({
+        element: container,
+        autoPan: {
+          animation: {
+            duration: 250,
+          },
+        },
+      });
+      closer.onclick = function () {
+        overlay.setPosition(undefined);
+        closer.blur();
+        return false;
+      };
+
+      const initalFeaturesLayer = new ol.layer.Vector({
+        source: new ol.source.Vector(),
+        style: new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: 6,
+            stroke: new ol.style.Stroke({
+              color: "rgba(200,200,200,1.0)",
+              width: 2,
+            }),
+            fill: new ol.style.Fill({
+              color: "rgba(255,0,0,1.0)",
+            }),
+          }),
+        }),
+      });
+      let details = {
+        coordinates: {
+          lat: -0.0917,
+          lng: 34.768,
+        },
+        url: "https://www.duniamaps.com/tile/{z}/{x}/{y}.png",
+        attribution:
+          'Map data & copy; <a href="https://duniamaps.com/">DuniaMaps</a>',
+      };
+
+      const iconFeature = new ol.Feature({
+        geometry: new ol.geom.Point(
+          ol.proj.fromLonLat([details.coordinates.lng, details.coordinates.lat])
+        ),
+        name: "My Location",
+      });
+
+      const iconStyle = new ol.style.Style({
+        image: new ol.style.Icon({
+          anchor: [0.5, 0.5],
+          anchorXUnits: "fraction",
+          anchorYUnits: "fraction",
+          src: "/api/images/icon.svg",
+        }),
+      });
+      iconFeature.setStyle(iconStyle);
+
+      const vectorSource = new ol.source.Vector({
+        features: [iconFeature],
+      });
+
+      const vectorLayer = new ol.layer.Vector({
+        source: vectorSource,
+      });
+
+      const view = new ol.View({
+        center: ol.proj.fromLonLat([
+          details.coordinates.lng,
+          details.coordinates.lat,
+        ]),
+        zoom: 17,
+      });
+
+      var map = new ol.Map({
+        target: "map",
+        layers: [
+          new ol.layer.Tile({
+            source: new ol.source.XYZ({
+              url:
+                "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}" +
+                "?access_token=pk.eyJ1IjoiZ2F0aG9nbzEiLCJhIjoiY2t0djhndnB4MGkzdDJucDg2bW5uNXNrcyJ9.mnbTMXxDrdYnTrb8Gr7_MA",
+            }),
+          }),
+          initalFeaturesLayer,
+          vectorLayer,
+        ],
+        view: view,
+      });
+
+      function adjustMarker(lng, lat) {
+        iconFeature.setGeometry(
+          new ol.geom.Point(ol.proj.fromLonLat([lng, lat]))
+        );
+        view.setCenter(ol.proj.fromLonLat([lng, lat]));
+        view.setZoom(18);
+      }
+
+      map.on("singleclick", function (evt) {
+        //  const coordinate = evt.coordinate;
+        //  const hdms = ol.proj.coordinate;
+        // content.innerHTML = "<p>You clicked here:</p><code>" + hdms + "</code>";
+        //  overlay.setPosition(coordinate);
+      });
+    </script>
+    <script></script>
+  </body>
+</html>
