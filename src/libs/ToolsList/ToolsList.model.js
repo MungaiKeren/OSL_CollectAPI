@@ -1,8 +1,6 @@
 const { Sequelize, QueryTypes } = require("sequelize");
 const sequelize = require("../../configs/connection");
 const ToolsList = require("../../models/ToolsList")(sequelize, Sequelize);
-const Path = require("path");
-const { log } = require("console");
 
 ToolsList.sync({ force: false });
 exports.createToolsList = (ToolsListData) => {
